@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Criar uma migration para executar no banco de dados: yarn prisma migrate dev
+
+model User {
+  id String @id @default(uuid())
+  name String
+  email String
+  password String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("users")
+}
+
+model Category {
+  id String @id @default(uuid())
+  name String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("categories")
+  products Product[] // significa que pode ter varios produtos dentro da categoria
+}
+
+model Product {
+  id String @id @default(uuid())
+  name String
+  price String
+  description String
+  banner String
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  category Category @relation(fields: [category_id], references: [id]) // está pegando a categoria id e referenciando com o ID, podendo ter varias categoria cadastrado
+
+  @@map("products")
+  category_id String
+  items Item[] // fala que um produto pode esta dentro de varios
+}
+
+model Order {
+  id String @id @default(uuid())
+  title Int // essa é a table ( MESA )
+  status Boolean @default(false) // para caso nao tenha sido concluido o pedido 
+  draft Boolean @default(true) // para nao enviar qnd tiver em rascunho ate que o Garçom finalize.
+  name String? // ? significar que passa a ser OPCIONAL o valor
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  @@map("orders")
+  items Item[]
+}
+
+model Item {
+  id String @id @default(uuid())
+  amount Int
+
+  created_at DateTime? @default(now())
+  updated_at DateTime? @default(now())
+
+  order Order @relation(fields: [order_id], references: [id])
+  product Product @relation(fields: [product_id], references: [id])
+
+  @@map("items")
+  order_id String
+  product_id String
+}
